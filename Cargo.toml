@@ -1,0 +1,50 @@
+
+[workspace]
+members = [
+    "graphql",
+    "indexer"
+]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+
+[workspace.dependencies]
+tokio = { version = "1.45", default-features = false, features = ["full"] }
+anyhow = { version = "1", default-features = false }
+dotenvy = { version = "0.15", default-features = false }
+tracing = { version = "0.1.41", default-features = false }
+tracing-subscriber = { version = "0.3", default-features = false, features = [
+    "fmt",
+    "env-filter",
+] }
+alloy = { version = "1.0", default-features = false, features = [
+    "full",
+    "node-bindings",
+    "reqwest",
+    "rlp",
+    "rpc-types-beacon",
+    "rpc-types",
+] }
+sqlx = { version = "0.8", features = ["runtime-tokio", "sqlite", "macros"] }
+async-graphql = "7"
+async-graphql-axum = "7"
+axum = "0.8"
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+
+[workspace.lints.clippy]
+cast_lossless = "deny"
+cast_possible_truncation = "deny"
+cast_possible_wrap = "deny"
+cast_precision_loss = "deny"
+cast_sign_loss = "deny"
+needless_return = "deny"
+panicking_overflow_checks = "deny"
+unwrap_used = "deny"
+
+[profile.release]
+overflow-checks = true

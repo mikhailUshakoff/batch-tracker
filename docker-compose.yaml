@@ -1,0 +1,23 @@
+version: "3.9"
+services:
+  indexer:
+    build:
+      context: .
+      dockerfile: Dockerfile.indexer
+    volumes:
+      - ./data:/app/data
+    env_file:
+      - indexer/.env
+    restart: unless-stopped
+
+  graphql:
+    build:
+      context: .
+      dockerfile: Dockerfile.graphql
+    ports:
+      - "9111:8000"
+    volumes:
+      - ./data:/app/data
+    env_file:
+      - graphql/.env
+    restart: unless-stopped
