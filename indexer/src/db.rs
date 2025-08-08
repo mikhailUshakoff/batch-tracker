@@ -240,7 +240,7 @@ impl DataBase {
                 prove_tx = ?,
                 prove_fee = ?,
                 is_profitable = ?,
-                is_proved_by_proposer = ?,
+                is_proved_by_proposer = ?
             WHERE batch_id = ?
             "#,
         )

@@ -134,7 +134,9 @@ impl BatchIndexer {
         for log in logs {
             let receipt = match self
                 .l1_provider
-                .get_transaction_receipt(log.transaction_hash.expect("Transaction receipt not found"))
+                .get_transaction_receipt(
+                    log.transaction_hash.expect("Transaction receipt not found"),
+                )
                 .await?
             {
                 Some(receipt) => receipt,
@@ -151,7 +153,9 @@ impl BatchIndexer {
             self.db
                 .insert_batch(
                     batch,
-                    log.transaction_hash.expect("proposeBatch transaction hash not found").to_string(),
+                    log.transaction_hash
+                        .expect("proposeBatch transaction hash not found")
+                        .to_string(),
                     receipt.from,
                     propose_fee,
                 )
@@ -182,12 +186,18 @@ impl BatchIndexer {
             let batches = log.log_decode::<ITaikoInbox::BatchesProved>()?;
             let receipt = self
                 .l1_provider
-                .get_transaction_receipt(log.transaction_hash.expect("proveBatch transaction receipt not found"))
+                .get_transaction_receipt(
+                    log.transaction_hash
+                        .expect("proveBatch transaction receipt not found"),
+                )
                 .await?
                 .expect("proveBatch transaction receipt is None");
             tracing::debug!("Proved {} batches", batches.inner.batchIds.len());
 
-            let tx_hash = log.transaction_hash.expect("proveBatch transaction hash not found").to_string();
+            let tx_hash = log
+                .transaction_hash
+                .expect("proveBatch transaction hash not found")
+                .to_string();
             // we divide the total fee by the number of batches to get the prove fee
             let prove_fee = Self::get_tx_eth_price(&receipt) / batches.inner.batchIds.len() as u128;
 
@@ -240,23 +250,25 @@ impl BatchIndexer {
         last_block_number: u64,
         block_count: u64,
     ) -> Result<u128, Error> {
-        let coinbase: Address = Address::from_str(coinbase_address)?;
+        let coinbase = Address::from_str(coinbase_address)?;
 
-        let start_block = last_block_number - block_count;
+        let start_block_number = last_block_number.saturating_sub(block_count);
 
-        let balance_before = self
+        let balance_start = self
             .l2_provider
             .get_balance(coinbase)
-            .block_id(start_block.into())
+            .block_id(start_block_number.into())
             .await?;
 
-        let balance_after = self
+        let balance_end = self
             .l2_provider
             .get_balance(coinbase)
             .block_id(last_block_number.into())
             .await?;
 
-        Ok((balance_after - balance_before).try_into()?)
+        let earned = balance_end.saturating_sub(balance_start);
+
+        Ok(earned.try_into().unwrap_or(0))
     }
 
     async fn get_prover(

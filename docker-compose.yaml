@@ -13,7 +13,7 @@ services:
   graphql:
     build:
       context: .
-      dockerfile: Dockerfile.graphql
+      dockerfile: Dockerfile.grql
     ports:
       - "9111:8000"
     volumes:
