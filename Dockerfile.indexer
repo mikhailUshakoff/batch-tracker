@@ -21,5 +21,8 @@ FROM ubuntu:latest
 # Copy the build artifact from the builder stage
 COPY --from=builder /usr/src/build/target/release/batch-tracker-indexer /usr/local/bin/batch-tracker-indexer
 
+# Set the environment variable
+ENV RUST_LOG=debug
+
 # Run the binary
 CMD ["batch-tracker-indexer"]

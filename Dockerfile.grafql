@@ -24,5 +24,8 @@ COPY --from=builder /usr/src/build/target/release/batch-tracker-graphql /usr/loc
 # Expose the port that the server will run on
 EXPOSE 8000
 
+# Set the environment variable
+ENV RUST_LOG=debug
+
 # Run the binary
 CMD ["batch-tracker-graphql"]
