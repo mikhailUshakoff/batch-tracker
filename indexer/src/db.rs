@@ -136,29 +136,44 @@ impl DataBase {
         proved_batch_id: u64,
         proved_block_id: u64,
     ) -> Result<(), Error> {
-        let indexed_l1_block: i64 = indexed_l1_block.try_into()?;
-        let proposed_batch_id: i64 = proposed_batch_id.try_into()?;
-        let proposed_block_id: i64 = proposed_block_id.try_into()?;
-        let proved_batch_id: i64 = proved_batch_id.try_into()?;
-        let proved_block_id: i64 = proved_block_id.try_into()?;
-        sqlx::query(
-            r#"
-            UPDATE status SET
-                indexed_l1_block = ?,
-                proposed_batch_id = ?,
-                proposed_block_id = ?,
-                proved_batch_id = ?,
-                proved_block_id = ?
-            WHERE id = 0
-            "#,
-        )
-        .bind(indexed_l1_block)
-        .bind(proposed_batch_id)
-        .bind(proposed_block_id)
-        .bind(proved_batch_id)
-        .bind(proved_block_id)
-        .execute(&self.pool)
-        .await?;
+        let mut query = String::from("UPDATE status SET ");
+        let mut updates = Vec::new();
+        let mut values: Vec<i64> = Vec::new();
+
+        if indexed_l1_block != 0 {
+            updates.push("indexed_l1_block = ?");
+            values.push(indexed_l1_block.try_into()?);
+        }
+        if proposed_batch_id != 0 {
+            updates.push("proposed_batch_id = ?");
+            values.push(proposed_batch_id.try_into()?);
+        }
+        if proposed_block_id != 0 {
+            updates.push("proposed_block_id = ?");
+            values.push(proposed_block_id.try_into()?);
+        }
+        if proved_batch_id != 0 {
+            updates.push("proved_batch_id = ?");
+            values.push(proved_batch_id.try_into()?);
+        }
+        if proved_block_id != 0 {
+            updates.push("proved_block_id = ?");
+            values.push(proved_block_id.try_into()?);
+        }
+
+        if updates.is_empty() {
+            return Ok(()); // nothing to update
+        }
+
+        query.push_str(&updates.join(", "));
+        query.push_str(" WHERE id = 0");
+
+        let mut sql = sqlx::query(&query);
+        for val in values {
+            sql = sql.bind(val);
+        }
+
+        sql.execute(&self.pool).await?;
         Ok(())
     }
 
