@@ -18,11 +18,16 @@ RUN cargo build -p batch-tracker-indexer --release
 # Use ubuntu as the base image
 FROM ubuntu:latest
 
+# Install CA certificates and any runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+ && rm -rf /var/lib/apt/lists/*
+
 # Copy the build artifact from the builder stage
 COPY --from=builder /usr/src/build/target/release/batch-tracker-indexer /usr/local/bin/batch-tracker-indexer
 
 # Set the environment variable
-ENV RUST_LOG=debug
+ENV RUST_LOG=info
 
 # Run the binary
 CMD ["batch-tracker-indexer"]
