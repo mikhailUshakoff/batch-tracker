@@ -185,7 +185,7 @@ impl DataBase {
         propose_fee: u128,
     ) -> Result<(), Error> {
         let batch_id: i64 = batch.inner.meta.batchId.try_into()?;
-        let is_sent_by_proposer = sender == batch.inner.meta.proposer;
+        let is_sent_by_proposer = sender == batch.inner.info.coinbase;
         let sender = sender.to_string();
         let proposer = batch.inner.meta.proposer.to_string();
         let propose_tx = tx_hash;
