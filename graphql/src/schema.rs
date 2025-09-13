@@ -15,6 +15,30 @@ impl QueryRoot {
         Ok(status)
     }
 
+    async fn min_coinbase_batch_id(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<i64>> {
+        let pool = ctx.data::<SqlitePool>()?;
+        let min_batch_id = sqlx::query_scalar::<_, i64>(
+            "SELECT MIN(batch_id)
+FROM batch
+WHERE coinbase = '0xCbeB5d484b54498d3893A0c3Eb790331962e9e9d'",
+        )
+        .fetch_optional(pool)
+        .await?;
+        Ok(min_batch_id)
+    }
+
+    async fn min_proposer_batch_id(&self, ctx: &Context<'_>) -> async_graphql::Result<Option<i64>> {
+        let pool = ctx.data::<SqlitePool>()?;
+        let min_batch_id = sqlx::query_scalar::<_, i64>(
+            "SELECT MIN(batch_id)
+FROM batch
+WHERE proposer = '0xCbeB5d484b54498d3893A0c3Eb790331962e9e9d'",
+        )
+        .fetch_optional(pool)
+        .await?;
+        Ok(min_batch_id)
+    }
+
     /// Returns the batch with the given id\
     /// `id`: Batch id
     async fn batch_by_id(
