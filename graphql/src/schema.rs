@@ -23,15 +23,15 @@ impl QueryRoot {
         &self,
         ctx: &Context<'_>,
         timestamp: i64,
-    ) -> async_graphql::Result<Option<Batch>> {
+    ) -> async_graphql::Result<Option<i64>> {
         let pool = ctx.data::<SqlitePool>()?;
-        let batch =
-            sqlx::query_as::<_, Batch>("SELECT MAX(batch_id) FROM batch WHERE proposed_at <= ?")
+        let batch_id =
+            sqlx::query_scalar::<_, i64>("SELECT MAX(batch_id) FROM batch WHERE proposed_at <= ?")
                 .bind(timestamp)
                 .fetch_optional(pool)
                 .await?;
 
-        Ok(batch)
+        Ok(batch_id)
     }
 
     /// Computes the accounting of batch fees for a given address within a range of batch IDs.
