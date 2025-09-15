@@ -23,6 +23,7 @@ pub struct BatchIndexer {
     proving_window: u64,
     indexing_step: u64,
     sleep_duration_sec: u64,
+    max_l1_fork_depth: u64,
 }
 
 impl BatchIndexer {
@@ -52,6 +53,7 @@ impl BatchIndexer {
             proving_window: u64::from(pacaya_config.provingWindow),
             indexing_step: config.indexing_step,
             sleep_duration_sec: config.sleep_duration_sec,
+            max_l1_fork_depth: config.max_l1_fork_depth,
         })
     }
 
@@ -61,6 +63,7 @@ impl BatchIndexer {
                 Ok(block) => block,
                 Err(e) => panic!("Failed to get current block number: {e}"),
             };
+            let current_block = current_block.saturating_sub(self.max_l1_fork_depth);
             let from_block = self.indexed_l1_block + 1;
             let to_block = from_block + self.indexing_step;
             tracing::info!("Indexing from block {from_block} to block {to_block}");
