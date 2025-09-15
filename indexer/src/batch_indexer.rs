@@ -57,13 +57,17 @@ impl BatchIndexer {
         })
     }
 
+    async fn get_current_block_number(&self) -> u64 {
+        let current_block = match self.l1_provider.get_block_number().await {
+            Ok(block) => block,
+            Err(e) => panic!("Failed to get current block number: {e}"),
+        };
+        return current_block.saturating_sub(self.max_l1_fork_depth);
+    }
+
     pub async fn run_indexing_loop(&mut self) {
         loop {
-            let current_block = match self.l1_provider.get_block_number().await {
-                Ok(block) => block,
-                Err(e) => panic!("Failed to get current block number: {e}"),
-            };
-            let current_block = current_block.saturating_sub(self.max_l1_fork_depth);
+            let current_block = self.get_current_block_number().await;
             let from_block = self.indexed_l1_block + 1;
             let to_block = from_block + self.indexing_step;
             tracing::info!("Indexing from block {from_block} to block {to_block}");
@@ -102,10 +106,7 @@ impl BatchIndexer {
                 }
             }
 
-            let current_block = match self.l1_provider.get_block_number().await {
-                Ok(block) => block,
-                Err(e) => panic!("Failed to get current block number: {e}"),
-            };
+            let current_block = self.get_current_block_number().await;
             if self.indexed_l1_block + self.indexing_step > current_block {
                 sleep(Duration::from_secs(
                     self.indexing_step * self.sleep_duration_sec,
